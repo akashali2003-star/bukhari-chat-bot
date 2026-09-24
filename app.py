@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import json
+from pathlib import Path
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -16,8 +17,9 @@ else:
 
 
 WELCOME_MESSAGE = "Assalam-o-Alaikum, Main Bukhari Chat Bot hoon. Aapka sawal likhein."
+LOGO_PATH = Path(__file__).resolve().parent / "bukhari.logo.png"
 
-st.set_page_config(page_title="Bukhari Chat Bot", page_icon="🤖", layout="wide")
+st.set_page_config(page_title="Bukhari Chat Bot", page_icon=str(LOGO_PATH), layout="wide")
 
 st.markdown(
     """
