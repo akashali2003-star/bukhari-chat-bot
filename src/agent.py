@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -45,13 +45,26 @@ class BasicAgent:
         self.model = genai.GenerativeModel("gemini-3.6-flash")
         self.chat = self.model.start_chat(history=[])
 
-    def respond(self, prompt: str) -> str:
+    def respond(
+        self,
+        prompt: str,
+        image_data: Optional[bytes] = None,
+        image_mime_type: Optional[str] = None,
+    ) -> str:
         cleaned = (prompt or "").strip()
-        if not cleaned:
+        if not cleaned and image_data is None:
             return "I'm ready when you are."
 
         try:
-            response = self.chat.send_message(cleaned)
+            message_parts = [cleaned or "Please describe this image."]
+            if image_data is not None:
+                message_parts.append(
+                    {
+                        "mime_type": image_mime_type or "image/jpeg",
+                        "data": image_data,
+                    }
+                )
+            response = self.chat.send_message(message_parts)
             return response.text
         except Exception as e:
             return f"Error: {e}"
