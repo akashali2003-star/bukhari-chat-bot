@@ -99,7 +99,7 @@ if "messages" not in st.session_state:
 with st.sidebar:
     st.markdown('<div class="sidebar-brand">Bukhari Chat Bot</div>', unsafe_allow_html=True)
     st.markdown('<p class="sidebar-note">A focused space for thoughtful answers, images, and ideas.</p>', unsafe_allow_html=True)
-    if st.button("New chat", icon="✦", use_container_width=True):
+    if st.button("✦  New chat", use_container_width=True):
         reset_chat()
         st.rerun()
     st.divider()
