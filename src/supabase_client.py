@@ -65,6 +65,20 @@ class SupabaseService:
             {"email": email, "password": password}
         )
 
+    def sign_in_with_google(self, redirect_to: str) -> Any:
+        return self.client.auth.sign_in_with_oauth(
+            {
+                "provider": "google",
+                "options": {"redirect_to": redirect_to},
+            }
+        )
+
+    def exchange_code_for_session(self, auth_code: str) -> Any:
+        return self.client.auth.exchange_code_for_session(auth_code)
+
+    def current_user(self) -> Any:
+        return self.client.auth.get_user().user
+
     def sign_out(self) -> None:
         self.client.auth.sign_out()
 

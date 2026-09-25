@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import json
+import os
 from pathlib import Path
 
 import streamlit as st
@@ -20,7 +21,7 @@ from src.supabase_client import SupabaseConfigurationError, SupabaseService, get
 
 WELCOME_MESSAGE = "Assalam-o-Alaikum, Main Bukhari Chat Bot hoon. Aapka sawal likhein."
 LOGO_PATH = Path(__file__).resolve().parent / "bukhari.logo.png"
-ENABLE_SUPABASE_AUTH = False
+ENABLE_SUPABASE_AUTH = True
 
 st.set_page_config(page_title="Bukhari Chat Bot", page_icon=str(LOGO_PATH), layout="wide")
 
@@ -162,17 +163,93 @@ def response_user(response: object) -> object:
     return getattr(response, "user", None)
 
 
+def auth_redirect_url() -> str:
+    return os.getenv("SUPABASE_REDIRECT_URL", "http://localhost:8501/app/")
+
+
+def complete_authentication(user: object) -> None:
+    was_guest = st.session_state.get("guest", False)
+    st.session_state.user = user
+    st.session_state.pop("guest", None)
+    st.session_state.pop("history_loaded_user", None)
+    if was_guest and any(message["role"] == "user" for message in st.session_state.get("messages", [])):
+        st.session_state.show_guest_save_prompt = True
+
+
+def handle_auth_callback(service: SupabaseService) -> None:
+    auth_error = st.query_params.get("error_description")
+    auth_code = st.query_params.get("code")
+    if auth_error:
+        st.error(f"Google sign-in failed: {auth_error}")
+        st.query_params.clear()
+        return
+    if not auth_code or "user" in st.session_state:
+        return
+
+    try:
+        result = service.exchange_code_for_session(auth_code)
+        user = response_user(result) or service.current_user()
+        complete_authentication(user)
+        st.query_params.clear()
+        st.rerun()
+    except Exception as exc:
+        st.error(f"Unable to complete Google sign-in: {exc}")
+        st.query_params.clear()
+
+
+def google_auth_url(result: object) -> str:
+    url = getattr(result, "url", None)
+    if url:
+        return url
+    if isinstance(result, dict):
+        return result.get("url", "")
+    return ""
+
+
 def show_authentication(service: SupabaseService) -> None:
     if "user" in st.session_state and st.session_state.user:
         user = st.session_state.user
+        st.markdown("<div class='sidebar-section-label'>Account</div>", unsafe_allow_html=True)
         st.markdown(f"Signed in as **{user.email}**")
         if st.button("Log out", use_container_width=True):
             service.sign_out()
-            for key in ("user", "history_rows", "history_loaded_user"):
+            for key in ("user", "history_rows", "history_loaded_user", "show_guest_save_prompt"):
                 st.session_state.pop(key, None)
             reset_chat()
             st.rerun()
         return
+
+    if st.session_state.get("guest"):
+        st.markdown("<div class='sidebar-section-label'>Guest session</div>", unsafe_allow_html=True)
+        st.info("Chat history is not saved in guest mode.")
+        if st.button("Sign in to save history", use_container_width=True):
+            st.session_state.pop("guest", None)
+            st.rerun()
+        return
+
+    st.markdown("<div class='sidebar-section-label'>Your account</div>", unsafe_allow_html=True)
+    st.markdown("**Sign in to save your chats**")
+    st.caption("Use email, Google, or continue as a guest.")
+    if st.button("Continue as Guest", use_container_width=True, key="guest-sign-in"):
+        st.session_state.guest = True
+        reset_chat()
+        st.rerun()
+
+    if st.button("Continue with Google", use_container_width=True, key="google-sign-in"):
+        try:
+            result = service.sign_in_with_google(auth_redirect_url())
+            url = google_auth_url(result)
+            if not url:
+                st.error("Google sign-in URL was not returned by Supabase.")
+            else:
+                redirect_script = json.dumps(url)
+                components.html(
+                    f"<script>window.parent.location.href = {redirect_script};</script>",
+                    height=0,
+                )
+                st.info("Opening Google sign-in...")
+        except Exception as exc:
+            st.error(f"Google sign-in could not start: {exc}")
 
     mode = st.radio("Account", ["Log in", "Sign up"], horizontal=True)
     with st.form("auth-form"):
@@ -189,14 +266,45 @@ def show_authentication(service: SupabaseService) -> None:
     try:
         result = service.sign_in(email.strip(), password) if mode == "Log in" else service.sign_up(email.strip(), password)
         user = response_user(result)
-        if user is None:
+        session = getattr(result, "session", None)
+        if user is None or (mode == "Sign up" and session is None):
             st.success("Account created. Check your email to confirm it, then log in.")
         else:
-            st.session_state.user = user
-            st.session_state.pop("history_loaded_user", None)
+            complete_authentication(user)
             st.rerun()
     except Exception as exc:
         st.error(f"Authentication failed: {exc}")
+
+
+def guest_chat_pairs() -> list[tuple[str, str]]:
+    messages = st.session_state.get("messages", [])
+    return [
+        (messages[index]["content"], messages[index + 1]["content"])
+        for index in range(len(messages) - 1)
+        if messages[index].get("role") == "user"
+        and messages[index + 1].get("role") == "assistant"
+    ]
+
+
+def render_guest_save_prompt(service: SupabaseService, user_id: str) -> None:
+    if not st.session_state.get("show_guest_save_prompt"):
+        return
+
+    st.info("You are signed in. Save this guest chat to your account so you can find it later.")
+    save_column, discard_column = st.columns(2)
+    with save_column:
+        if st.button("Save guest chat", use_container_width=True):
+            try:
+                for message, response in guest_chat_pairs():
+                    service.save_chat(user_id, message, response)
+                st.session_state.show_guest_save_prompt = False
+                st.success("Guest chat saved to your account.")
+            except Exception as exc:
+                st.error(f"Could not save guest chat: {exc}")
+    with discard_column:
+        if st.button("Keep it private", use_container_width=True):
+            st.session_state.show_guest_save_prompt = False
+            st.rerun()
 
 
 def render_copy_button(content: str, key: str) -> None:
@@ -222,10 +330,11 @@ if ENABLE_SUPABASE_AUTH:
             st.info("Add SUPABASE_URL and SUPABASE_KEY to .env or Streamlit secrets, then restart the app.")
             st.stop()
 
+    handle_auth_callback(st.session_state.supabase)
     with st.sidebar:
         show_authentication(st.session_state.supabase)
 
-    if "user" not in st.session_state:
+    if "user" not in st.session_state and not st.session_state.get("guest"):
         st.info("Log in or create an account from the sidebar to start chatting.")
         st.stop()
 
@@ -234,7 +343,7 @@ if BasicAgent is None:
     st.info("Add your GEMINI_API_KEY to the project-root .env file and restart the app.")
     st.stop()
 
-if ENABLE_SUPABASE_AUTH:
+if ENABLE_SUPABASE_AUTH and "user" in st.session_state:
     current_user_id = st.session_state.user.id
     if st.session_state.get("history_loaded_user") != current_user_id:
         try:
@@ -243,6 +352,7 @@ if ENABLE_SUPABASE_AUTH:
         except Exception as exc:
             st.error(f"Unable to load chat history: {exc}")
             st.session_state.history_rows = []
+    render_guest_save_prompt(st.session_state.supabase, current_user_id)
 
 if "agent" not in st.session_state:
     st.session_state.agent = BasicAgent(name="Bukhari Chat Bot")
@@ -259,7 +369,7 @@ with st.sidebar:
     if st.button("✦  New chat", use_container_width=True):
         reset_chat()
         st.rerun()
-    if ENABLE_SUPABASE_AUTH:
+    if ENABLE_SUPABASE_AUTH and "user" in st.session_state:
         st.markdown("**Previous chats**")
         history_rows = st.session_state.get("history_rows", [])
         if not history_rows:
@@ -329,7 +439,7 @@ if chat_event:
         st.markdown(response)
         render_copy_button(response, f"copy-live-{len(st.session_state.messages)}")
     st.session_state.messages.append({"role": "assistant", "content": response})
-    if ENABLE_SUPABASE_AUTH:
+    if ENABLE_SUPABASE_AUTH and current_user_id:
         try:
             st.session_state.supabase.save_chat(current_user_id, user_message["content"], response)
             st.session_state.history_rows.append(
