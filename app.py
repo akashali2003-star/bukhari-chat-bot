@@ -23,6 +23,37 @@ LOGO_PATH = Path(__file__).resolve().parent / "bukhari.logo.png"
 
 st.set_page_config(page_title="Bukhari Chat Bot", page_icon=str(LOGO_PATH), layout="wide")
 
+components.html(
+    """
+    <script>
+        (() => {
+            const parentDocument = window.parent.document;
+            const staticPath = "/app/static/";
+
+            if (!parentDocument.querySelector('link[rel="manifest"]')) {
+                const manifest = parentDocument.createElement("link");
+                manifest.rel = "manifest";
+                manifest.href = `${staticPath}manifest.json`;
+                parentDocument.head.appendChild(manifest);
+            }
+
+            if (!parentDocument.querySelector('meta[name="theme-color"]')) {
+                const themeColor = parentDocument.createElement("meta");
+                themeColor.name = "theme-color";
+                themeColor.content = "#147d92";
+                parentDocument.head.appendChild(themeColor);
+            }
+
+            if ("serviceWorker" in navigator) {
+                navigator.serviceWorker.register(`${staticPath}sw.js`, { scope: "/app/" })
+                    .catch(() => navigator.serviceWorker.register(`${staticPath}sw.js`));
+            }
+        })();
+    </script>
+    """,
+    height=0,
+)
+
 st.markdown(
     """
     <style>
