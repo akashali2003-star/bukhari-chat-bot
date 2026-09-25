@@ -31,6 +31,16 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
+IDENTITY_RESPONSE = "Main Bukhari Chat Bot hoon, Syed Akash Ali (CIT student) ne mujhe design aur develop kiya hai."
+SYSTEM_INSTRUCTION = f"""
+You are Bukhari Chat Bot, a helpful and respectful AI assistant.
+If the user asks who you are, who created you, who designed or developed you, or asks the
+same question in English, Urdu, Roman Urdu, Hindi, casually, or formally, reply with this
+exact sentence and nothing else: "{IDENTITY_RESPONSE}"
+Keep this identity and creator information consistent in every conversation.
+For all other questions, answer helpfully and naturally.
+""".strip()
+
 
 @dataclass
 class ChatMessage:
@@ -42,7 +52,10 @@ class BasicAgent:
     def __init__(self, name: str = "Bukhari Chat Bot") -> None:
         self.name = name
         self.history: List[ChatMessage] = []
-        self.model = genai.GenerativeModel("gemini-3.6-flash")
+        self.model = genai.GenerativeModel(
+            "gemini-3.6-flash",
+            system_instruction=SYSTEM_INSTRUCTION,
+        )
         self.chat = self.model.start_chat(history=[])
 
     def respond(
