@@ -58,6 +58,7 @@ components.html(
 st.markdown(
     """
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
         :root {
             --ink: #17212b;
             --muted: #6b7785;
@@ -86,17 +87,64 @@ st.markdown(
         .sidebar-brand { font-size: 1.2rem; font-weight: 750; color: var(--ink); }
         .sidebar-note { color: var(--muted); font-size: 0.86rem; line-height: 1.5; }
         .copy-response { border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0.28rem 0.55rem; }
-        @media (prefers-color-scheme: dark) {
-            :root { --ink: #e7eef1; --muted: #aab9c0; --surface: #18242a; --line: #34474f; --accent-soft: #193e45; }
-            .stApp { background: #111a1e; }
-            [data-testid="stSidebar"] { background: #162126; }
-            [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) { border-color: #2d5e63; }
-            [data-testid="stChatInput"] > div { border-color: #3a4f57 !important; }
+        :root {
+            --ink: #18333a;
+            --muted: #6d7d80;
+            --surface: #ffffff;
+            --surface-soft: #f1f7f6;
+            --line: #d9e5e2;
+            --accent: #147d92;
+            --accent-deep: #0c596b;
+            --accent-soft: #dff2f0;
+            --coral: #f4a28c;
         }
+        html, body, [class*="css"] { font-family: "DM Sans", "Avenir Next", sans-serif; }
+        .stApp { background: #f7faf9; background-image: radial-gradient(circle at 88% 8%, rgba(20, 125, 146, 0.08), transparent 24rem); }
+        .block-container { max-width: 1080px; padding: 2.2rem 2rem 7.5rem; }
+        .app-header { display: flex; align-items: center; gap: 1rem; margin: 0.3rem 0 2rem; }
+        .app-header-logo { width: 58px; height: 58px; border-radius: 17px; object-fit: cover; box-shadow: 0 10px 22px rgba(20, 125, 146, 0.2); }
+        .app-header-copy { min-width: 0; }
+        .app-kicker { color: var(--accent); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; margin: 0 0 0.3rem; }
+        .app-header h1 { color: var(--ink); font-family: "Space Grotesk", "Avenir Next", sans-serif; font-size: clamp(1.65rem, 3vw, 2.35rem); font-weight: 700; line-height: 1.05; margin: 0; }
+        .app-subtitle { color: var(--muted); font-size: 0.96rem; margin: 0.45rem 0 0; }
+        [data-testid="stSidebar"] { background: #17363d; border-right: 0; }
+        [data-testid="stSidebar"] .block-container { padding: 1.35rem 1rem; }
+        [data-testid="stSidebar"] .sidebar-brand { color: #f4fbfa; font-family: "Space Grotesk", sans-serif; font-size: 1.05rem; font-weight: 700; }
+        [data-testid="stSidebar"] .sidebar-note { color: #a9c2c2; font-size: 0.82rem; line-height: 1.5; }
+        .sidebar-brand-row { display: flex; align-items: center; gap: 0.7rem; margin: 0.15rem 0 0.3rem; }
+        .sidebar-brand-logo { width: 34px; height: 34px; border: 2px solid rgba(255,255,255,0.35); border-radius: 11px; object-fit: cover; }
+        .sidebar-section-label { color: #7fa6a6; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.14em; margin: 1.25rem 0 0.5rem; text-transform: uppercase; }
+        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
+        [data-testid="stSidebar"] label { color: #d6e7e5; }
+        [data-testid="stSidebar"] hr { border-color: rgba(214, 231, 229, 0.16); margin: 1.1rem 0; }
+        [data-testid="stSidebar"] button { background: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.13) !important; color: #eef9f7 !important; }
+        [data-testid="stSidebar"] button:hover { background: rgba(255,255,255,0.16) !important; border-color: rgba(255,255,255,0.3) !important; }
+        [data-testid="stChatMessage"] { border: 1px solid var(--line); border-radius: 20px; margin: 1.05rem 0; padding: 1rem 1.15rem; max-width: 78%; background: var(--surface); box-shadow: 0 10px 28px rgba(24, 51, 58, 0.06); }
+        [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) { background: #e4f3f0; border-color: #c5e3df; border-bottom-right-radius: 7px; }
+        [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) { border-bottom-left-radius: 7px; }
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p { color: var(--ink); line-height: 1.7; }
+        [data-testid="stChatMessage"] [data-testid="chatAvatarIcon-user"] { background: var(--coral); }
+        [data-testid="stChatMessage"] [data-testid="chatAvatarIcon-assistant"] { background: var(--accent); }
+        [data-testid="stChatInput"] { border-top: 0 !important; background: transparent !important; margin-top: 1.2rem; }
+        [data-testid="stChatInput"] > div { border: 1px solid #bfd4d1 !important; border-radius: 18px !important; background: var(--surface) !important; box-shadow: 0 14px 34px rgba(24, 51, 58, 0.13) !important; padding: 0.3rem 0.45rem 0.3rem 0.85rem !important; transition: border-color 160ms ease, box-shadow 160ms ease !important; }
+        [data-testid="stChatInput"] > div:focus-within { border-color: var(--accent) !important; box-shadow: 0 14px 34px rgba(20, 125, 146, 0.18) !important; }
+        [data-testid="stChatInput"] textarea { color: var(--ink) !important; font-size: 0.96rem !important; }
+        [data-testid="stChatInput"] button { background: var(--accent) !important; border: 0 !important; border-radius: 12px !important; color: white !important; }
+        [data-testid="stChatInput"] button:hover { background: var(--accent-deep) !important; }
+        .stButton > button, [data-testid="stFormSubmitButton"] button { border: 1px solid #c5d8d5; border-radius: 11px; font-weight: 600; min-height: 2.65rem; transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease; }
+        .stButton > button:hover, [data-testid="stFormSubmitButton"] button:hover { box-shadow: 0 7px 16px rgba(20, 125, 146, 0.15); transform: translateY(-1px); }
         @media (max-width: 640px) {
-            .block-container { padding: 1.7rem 0.8rem 7rem; }
+            .block-container { padding: 1.35rem 0.85rem 7rem; }
+            .app-header { margin-bottom: 1.35rem; }
+            .app-header-logo { width: 48px; height: 48px; border-radius: 14px; }
             [data-testid="stChatMessage"] { max-width: 94%; }
-            h1 { font-size: 1.65rem !important; }
+        }
+        @media (prefers-color-scheme: dark) {
+            :root { --ink: #e7f2f0; --muted: #aabfc0; --surface: #1b2b30; --line: #385057; --accent-soft: #1d4549; }
+            .stApp { background: #101d21; }
+            .app-header h1, [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p { color: var(--ink); }
+            [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) { border-color: #2d6564; }
+            [data-testid="stChatInput"] > div { border-color: #3a5a5c !important; }
         }
     </style>
     """,
@@ -175,8 +223,6 @@ if ENABLE_SUPABASE_AUTH:
             st.stop()
 
     with st.sidebar:
-        st.markdown('<div class="sidebar-brand">Bukhari Chat Bot</div>', unsafe_allow_html=True)
-        st.markdown('<p class="sidebar-note">Sign in to save and revisit your conversations.</p>', unsafe_allow_html=True)
         show_authentication(st.session_state.supabase)
 
     if "user" not in st.session_state:
@@ -204,6 +250,12 @@ if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": WELCOME_MESSAGE}]
 
 with st.sidebar:
+    st.markdown(
+        '<div class="sidebar-brand-row"><img class="sidebar-brand-logo" src="/app/static/bukhari.logo.png" alt=""><div class="sidebar-brand">Bukhari Chat Bot</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown('<p class="sidebar-note">A calm space for thoughtful answers.</p>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-section-label">Workspace</div>', unsafe_allow_html=True)
     if st.button("✦  New chat", use_container_width=True):
         reset_chat()
         st.rerun()
@@ -228,9 +280,10 @@ with st.sidebar:
     st.divider()
     st.caption("Powered by Gemini")
 
-st.markdown('<div class="app-kicker">Personal AI workspace</div>', unsafe_allow_html=True)
-st.title("Bukhari Chat Bot")
-st.markdown('<p class="app-subtitle">Ask a question, attach an image, and keep the conversation flowing.</p>', unsafe_allow_html=True)
+st.markdown(
+    '<header class="app-header"><img class="app-header-logo" src="/app/static/bukhari.logo.png" alt="Bukhari Chat Bot logo"><div class="app-header-copy"><div class="app-kicker">Personal AI workspace</div><h1>Bukhari Chat Bot</h1><p class="app-subtitle">Ask a question, attach an image, and keep the conversation flowing.</p></div></header>',
+    unsafe_allow_html=True,
+)
 
 for index, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
