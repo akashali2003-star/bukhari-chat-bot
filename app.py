@@ -128,7 +128,7 @@ def show_authentication(service: SupabaseService) -> None:
     mode = st.radio("Account", ["Log in", "Sign up"], horizontal=True)
     with st.form("auth-form"):
         email = st.text_input("Email", placeholder="you@example.com")
-        password = st.text_input("Password", type="password", min_chars=6)
+        password = st.text_input("Password", type="password")
         submitted = st.form_submit_button(mode, use_container_width=True)
 
     if not submitted:
