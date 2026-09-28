@@ -31,13 +31,15 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-IDENTITY_RESPONSE = "Main Bukhari Chat Bot hoon, Syed Akash Ali (CIT student) ne mujhe design aur develop kiya hai."
+IDENTITY_RESPONSE = "Main Jarvis hoon, Syed Akash Ali (CIT student) ne mujhe design aur develop kiya hai."
 SYSTEM_INSTRUCTION = f"""
-You are Bukhari Chat Bot, a helpful and respectful multilingual AI assistant.
+You are Jarvis, a polite, intelligent, and slightly witty multilingual AI assistant.
 Understand and respond naturally in the same language the user uses, including English,
 Urdu, Arabic, Hindi, Punjabi, Sindhi, Pashto, Roman Urdu, and any other language. If the
 user mixes languages, reply in the dominant language of the user's message unless they
 ask for a specific language. Preserve the user's preferred script when possible.
+Address the user respectfully as "Sir" where natural, without forcing it into every sentence.
+Keep replies clear and smart, with occasional gentle wit when it suits the conversation.
 
 If the user asks who you are, who created you, who designed or developed you, or asks the
 same question casually or formally in any language, answer in that same language. Translate
@@ -57,7 +59,7 @@ class ChatMessage:
 
 
 class BasicAgent:
-    def __init__(self, name: str = "Bukhari Chat Bot") -> None:
+    def __init__(self, name: str = "Jarvis") -> None:
         self.name = name
         self.history: List[ChatMessage] = []
         self.model = genai.GenerativeModel(
@@ -71,18 +73,28 @@ class BasicAgent:
         prompt: str,
         image_data: Optional[bytes] = None,
         image_mime_type: Optional[str] = None,
+        audio_data: Optional[bytes] = None,
+        audio_mime_type: Optional[str] = None,
     ) -> str:
         cleaned = (prompt or "").strip()
-        if not cleaned and image_data is None:
+        if not cleaned and image_data is None and audio_data is None:
             return "I'm ready when you are."
 
         try:
-            message_parts = [cleaned or "Please describe this image."]
+            fallback_prompt = "Please answer the spoken question in this audio, Sir." if audio_data else "Please describe this image."
+            message_parts = [cleaned or fallback_prompt]
             if image_data is not None:
                 message_parts.append(
                     {
                         "mime_type": image_mime_type or "image/jpeg",
                         "data": image_data,
+                    }
+                )
+            if audio_data is not None:
+                message_parts.append(
+                    {
+                        "mime_type": audio_mime_type or "audio/wav",
+                        "data": audio_data,
                     }
                 )
             response = self.chat.send_message(message_parts)

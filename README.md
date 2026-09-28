@@ -1,6 +1,6 @@
-# Bukhari Chat Bot
+# Jarvis
 
-This project includes a Streamlit chat UI backed by Gemini and Supabase authentication.
+Jarvis is a multilingual Streamlit AI assistant backed by Gemini and Supabase authentication.
 
 ## Features
 
@@ -8,6 +8,8 @@ This project includes a Streamlit chat UI backed by Gemini and Supabase authenti
 - Per-user chat history saved in Supabase
 - Sidebar for starting a new chat and reopening saved exchanges
 - Gemini image and text responses
+- Voice questions through microphone recording and spoken replies in the browser
+- Installable PWA with a Jarvis-branded app shell
 
 ## Run it
 

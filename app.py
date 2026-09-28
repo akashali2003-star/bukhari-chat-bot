@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import html
+import hashlib
 import json
 import os
-from pathlib import Path
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -19,11 +19,10 @@ else:
 from src.supabase_client import SupabaseConfigurationError, SupabaseService, get_supabase_service
 
 
-WELCOME_MESSAGE = "Assalam-o-Alaikum, Main Bukhari Chat Bot hoon. Aapka sawal likhein."
-LOGO_PATH = Path(__file__).resolve().parent / "bukhari.logo.png"
+WELCOME_MESSAGE = "Assalam-o-Alaikum, Main Jarvis hoon. Aapka sawal likhein, Sir."
 ENABLE_SUPABASE_AUTH = True
 
-st.set_page_config(page_title="Bukhari Chat Bot", page_icon=str(LOGO_PATH), layout="wide")
+st.set_page_config(page_title="Jarvis", page_icon="⚡", layout="wide")
 
 components.html(
     """
@@ -42,7 +41,7 @@ components.html(
             if (!parentDocument.querySelector('meta[name="theme-color"]')) {
                 const themeColor = parentDocument.createElement("meta");
                 themeColor.name = "theme-color";
-                themeColor.content = "#147d92";
+                themeColor.content = "#07111f";
                 parentDocument.head.appendChild(themeColor);
             }
 
@@ -152,10 +151,83 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.markdown(
+    """
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap');
+        :root {
+            color-scheme: dark;
+            --ink: #e4f8ff;
+            --muted: #8aa9bb;
+            --surface: #0b1725;
+            --line: rgba(73, 202, 255, 0.24);
+            --cyan: #55e7ff;
+            --blue: #4b91ff;
+            --amber: #ffbd62;
+        }
+        html, body, [class*="css"] { color: var(--ink); font-family: "Rajdhani", "Segoe UI", sans-serif; }
+        .stApp { color: var(--ink); background-color: #050b13; background-image: linear-gradient(rgba(62, 167, 222, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(62, 167, 222, 0.035) 1px, transparent 1px), linear-gradient(135deg, #07111f 0%, #081522 52%, #07101b 100%); background-size: 36px 36px, 36px 36px, auto; }
+        [data-testid="stHeader"] { background: transparent; }
+        [data-testid="stDecoration"] { display: none; }
+        .block-container { max-width: 1080px; padding: 2rem 2rem 7.5rem; }
+        h1, h2, h3, p, label { letter-spacing: 0; }
+        .app-header { display: flex; align-items: center; gap: 1rem; margin: 0.3rem 0 2rem; animation: console-boot 500ms ease-out both; }
+        .app-header-logo { width: 58px; height: 58px; border: 1px solid rgba(85, 231, 255, 0.48); border-radius: 15px; object-fit: cover; box-shadow: 0 0 24px rgba(49, 198, 255, 0.2); }
+        .app-header-copy { min-width: 0; }
+        .app-kicker { color: var(--cyan); font-size: 0.77rem; font-weight: 700; text-transform: uppercase; margin: 0 0 0.35rem; }
+        .app-kicker::before { content: ""; display: inline-block; width: 7px; height: 7px; margin: 0 0.55rem 1px 0; border-radius: 50%; background: var(--amber); box-shadow: 0 0 10px rgba(255, 189, 98, 0.8); animation: status-pulse 2.2s ease-in-out infinite; }
+        .app-header h1 { color: var(--ink); font-family: "Orbitron", "Segoe UI", sans-serif; font-size: 2.2rem; font-weight: 700; line-height: 1.1; margin: 0; text-shadow: 0 0 18px rgba(85, 231, 255, 0.26); }
+        .app-subtitle { color: var(--muted); font-size: 1.08rem; margin: 0.4rem 0 0; }
+        [data-testid="stSidebar"] { background: rgba(5, 14, 25, 0.97); border-right: 1px solid var(--line); }
+        [data-testid="stSidebar"] .block-container { padding: 1.35rem 1rem; }
+        [data-testid="stSidebar"] .sidebar-brand { color: var(--ink); font-family: "Orbitron", sans-serif; font-size: 1.05rem; font-weight: 700; }
+        [data-testid="stSidebar"] .sidebar-note { color: var(--muted); font-size: 0.96rem; line-height: 1.4; }
+        .sidebar-brand-row { display: flex; align-items: center; gap: 0.7rem; margin: 0.15rem 0 0.3rem; }
+        .sidebar-brand-logo { width: 34px; height: 34px; border: 1px solid rgba(85, 231, 255, 0.5); border-radius: 10px; object-fit: cover; box-shadow: 0 0 14px rgba(49, 198, 255, 0.2); }
+        .sidebar-section-label { color: var(--cyan); font-size: 0.78rem; font-weight: 700; margin: 1.25rem 0 0.5rem; text-transform: uppercase; }
+        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p, [data-testid="stSidebar"] label { color: #c7dce9; }
+        [data-testid="stSidebar"] hr { border-color: var(--line); margin: 1.1rem 0; }
+        [data-testid="stSidebar"] button { background: #0b1b2b !important; border: 1px solid var(--line) !important; color: var(--ink) !important; }
+        [data-testid="stSidebar"] button:hover { border-color: var(--cyan) !important; box-shadow: 0 0 15px rgba(85, 231, 255, 0.16); }
+        [data-testid="stChatMessage"] { border: 1px solid var(--line); border-radius: 12px; margin: 1rem 0; padding: 1rem 1.15rem; max-width: 82%; background: rgba(10, 24, 39, 0.92); box-shadow: 0 0 18px rgba(32, 126, 193, 0.08), inset 0 0 20px rgba(19, 71, 103, 0.08); }
+        [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) { margin-left: auto; background: rgba(15, 39, 62, 0.94); border-color: rgba(75, 145, 255, 0.42); }
+        [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) { margin-right: auto; border-left: 2px solid var(--cyan); }
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p { color: var(--ink); line-height: 1.55; font-size: 1.08rem; }
+        [data-testid="stChatMessage"] [data-testid="chatAvatarIcon-user"] { background: var(--blue); }
+        [data-testid="stChatMessage"] [data-testid="chatAvatarIcon-assistant"] { background: #087a9d; }
+        [data-testid="stChatInput"] { border-top: 0 !important; background: transparent !important; margin-top: 1rem; }
+        [data-testid="stChatInput"] > div { border: 1px solid rgba(85, 231, 255, 0.34) !important; border-radius: 12px !important; background: #091827 !important; box-shadow: 0 0 22px rgba(21, 148, 207, 0.12) !important; padding: 0.3rem 0.45rem 0.3rem 0.85rem !important; transition: border-color 160ms ease, box-shadow 160ms ease !important; }
+        [data-testid="stChatInput"] > div:focus-within { border-color: var(--cyan) !important; box-shadow: 0 0 24px rgba(85, 231, 255, 0.2) !important; }
+        [data-testid="stChatInput"] textarea { color: var(--ink) !important; font-size: 1.04rem !important; }
+        [data-testid="stChatInput"] button { background: #087a9d !important; border: 1px solid rgba(85, 231, 255, 0.4) !important; border-radius: 9px !important; color: white !important; }
+        [data-testid="stChatInput"] button:hover { background: #0b9dc2 !important; box-shadow: 0 0 13px rgba(85, 231, 255, 0.35); }
+        .stButton > button, [data-testid="stFormSubmitButton"] button { border: 1px solid var(--line); border-radius: 8px; font-weight: 600; min-height: 2.65rem; transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }
+        .stButton > button:hover, [data-testid="stFormSubmitButton"] button:hover { border-color: var(--cyan); box-shadow: 0 0 14px rgba(85, 231, 255, 0.18); transform: translateY(-1px); }
+        [data-testid="stAudioInput"] { border: 1px solid rgba(85, 231, 255, 0.22); border-radius: 10px; padding: 0.55rem 0.8rem 0.2rem; background: rgba(7, 20, 33, 0.75); }
+        @keyframes console-boot { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes status-pulse { 50% { opacity: 0.48; box-shadow: 0 0 4px rgba(255, 189, 98, 0.45); } }
+        @media (max-width: 640px) {
+            .block-container { padding: 1.35rem 0.85rem 7rem; }
+            .app-header { margin-bottom: 1.35rem; gap: 0.75rem; }
+            .app-header-logo { width: 48px; height: 48px; }
+            .app-header h1 { font-size: 1.75rem; }
+            .app-subtitle { font-size: 0.98rem; }
+            [data-testid="stChatMessage"] { max-width: 96%; }
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    '<header class="app-header"><img class="app-header-logo" src="/app/static/jarvis-icon.svg" alt="Jarvis interface icon"><div class="app-header-copy"><div class="app-kicker">System online</div><h1>Jarvis</h1><p class="app-subtitle">Your intelligent assistant is ready, Sir.</p></div></header>',
+    unsafe_allow_html=True,
+)
+
 
 def reset_chat() -> None:
     if BasicAgent is not None:
-        st.session_state.agent = BasicAgent(name="Bukhari Chat Bot")
+        st.session_state.agent = BasicAgent(name="Jarvis")
     st.session_state.messages = [{"role": "assistant", "content": WELCOME_MESSAGE}]
 
 
@@ -312,11 +384,38 @@ def render_copy_button(content: str, key: str) -> None:
     copy_text = html.escape(json.dumps(content), quote=True)
     components.html(
         f"""
-        <button class="copy-response" onclick="navigator.clipboard.writeText({copy_text})">
-            Copy response
+        <button style="border:1px solid #24516a;border-radius:7px;background:#091827;color:#a9ccdb;cursor:pointer;font:600 13px Rajdhani,sans-serif;padding:5px 9px" onclick="navigator.clipboard.writeText({copy_text})">
+            Copy
         </button>
         """,
         height=38,
+    )
+
+
+def render_listen_button(content: str) -> None:
+    speech_text = json.dumps(content, ensure_ascii=False)
+    speech_text = speech_text.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+    components.html(
+        f"""
+        <button style="border:1px solid #26738b;border-radius:7px;background:#071b29;color:#74eaff;cursor:pointer;font:600 14px Rajdhani,sans-serif;padding:6px 11px">
+            🔊 Listen
+        </button>
+        <script>
+            const listenButton = document.querySelector("button");
+            listenButton.addEventListener("click", () => {{
+                if (!("speechSynthesis" in window)) {{
+                    listenButton.textContent = "Speech unavailable";
+                    return;
+                }}
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance({speech_text});
+                utterance.lang = navigator.language || "en-US";
+                utterance.rate = 1;
+                window.speechSynthesis.speak(utterance);
+            }});
+        </script>
+        """,
+        height=42,
     )
 
 
@@ -332,6 +431,11 @@ if ENABLE_SUPABASE_AUTH:
 
     handle_auth_callback(st.session_state.supabase)
     with st.sidebar:
+        st.markdown(
+            '<div class="sidebar-brand-row"><img class="sidebar-brand-logo" src="/app/static/jarvis-icon.svg" alt=""><div class="sidebar-brand">Jarvis</div></div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown('<p class="sidebar-note">Personal intelligence system</p>', unsafe_allow_html=True)
         show_authentication(st.session_state.supabase)
 
     if "user" not in st.session_state and not st.session_state.get("guest"):
@@ -355,16 +459,11 @@ if ENABLE_SUPABASE_AUTH and "user" in st.session_state:
     render_guest_save_prompt(st.session_state.supabase, current_user_id)
 
 if "agent" not in st.session_state:
-    st.session_state.agent = BasicAgent(name="Bukhari Chat Bot")
+    st.session_state.agent = BasicAgent(name="Jarvis")
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": WELCOME_MESSAGE}]
 
 with st.sidebar:
-    st.markdown(
-        '<div class="sidebar-brand-row"><img class="sidebar-brand-logo" src="/app/static/bukhari.logo.png" alt=""><div class="sidebar-brand">Bukhari Chat Bot</div></div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown('<p class="sidebar-note">A calm space for thoughtful answers.</p>', unsafe_allow_html=True)
     st.markdown('<div class="sidebar-section-label">Workspace</div>', unsafe_allow_html=True)
     if st.button("✦  New chat", use_container_width=True):
         reset_chat()
@@ -384,33 +483,38 @@ with st.sidebar:
                 ]
                 st.rerun()
     st.divider()
-    st.markdown("**Voice input**")
-    st.audio_input("Record a voice note", key="voice_note")
-    st.caption("Voice notes are captured here. Text transcription needs a speech-to-text service.")
     st.divider()
     st.caption("Powered by Gemini")
-
-st.markdown(
-    '<header class="app-header"><img class="app-header-logo" src="/app/static/bukhari.logo.png" alt="Bukhari Chat Bot logo"><div class="app-header-copy"><div class="app-kicker">Personal AI workspace</div><h1>Bukhari Chat Bot</h1><p class="app-subtitle">Ask a question, attach an image, and keep the conversation flowing.</p></div></header>',
-    unsafe_allow_html=True,
-)
 
 for index, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         if message.get("image"):
             st.image(message["image"], caption="Attached image", use_container_width=True)
+        if message.get("audio"):
+            st.audio(message["audio"], format="audio/wav")
         st.markdown(message["content"])
         if message["role"] == "assistant":
             render_copy_button(message["content"], f"copy-{index}")
+            render_listen_button(message["content"])
+
+voice_recording = st.audio_input("Ask Jarvis by voice", key="voice_note")
+voice_audio_data = voice_recording.getvalue() if voice_recording else None
+voice_hash = hashlib.sha256(voice_audio_data).hexdigest() if voice_audio_data else None
+new_voice_audio = voice_audio_data if voice_hash and voice_hash != st.session_state.get("processed_voice_hash") else None
+if new_voice_audio:
+    st.session_state.processed_voice_hash = voice_hash
 
 chat_event = st.chat_input(
-    "Message Bukhari Chat Bot...",
+    "Message Jarvis, Sir...",
     accept_file=True,
     file_type=["jpg", "jpeg", "png", "webp"],
 )
 
-if chat_event:
-    if isinstance(chat_event, str):
+if chat_event or new_voice_audio:
+    if chat_event is None:
+        prompt = ""
+        attached_files = []
+    elif isinstance(chat_event, str):
         prompt = chat_event
         attached_files = []
     else:
@@ -420,30 +524,42 @@ if chat_event:
     attached_file = attached_files[0] if attached_files else None
     image_data = attached_file.getvalue() if attached_file else None
     image_mime_type = attached_file.type if attached_file else None
-    if not prompt.strip() and not image_data:
+    if not prompt.strip() and not image_data and not new_voice_audio:
         st.warning("Write a message or attach an image first.")
         st.stop()
 
-    user_message = {"role": "user", "content": prompt or "Tell me about this image."}
+    user_content = prompt or ("Voice question" if new_voice_audio else "Tell me about this image.")
+    user_message = {"role": "user", "content": user_content}
     if image_data:
         user_message["image"] = image_data
+    if new_voice_audio:
+        user_message["audio"] = new_voice_audio
     st.session_state.messages.append(user_message)
     with st.chat_message("user"):
         if image_data:
             st.image(image_data, caption="Attached image", use_container_width=True)
+        if new_voice_audio:
+            st.audio(new_voice_audio, format="audio/wav")
         st.markdown(user_message["content"])
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            response = st.session_state.agent.respond(prompt, image_data, image_mime_type)
+            response = st.session_state.agent.respond(
+                prompt,
+                image_data,
+                image_mime_type,
+                new_voice_audio,
+                voice_recording.type if voice_recording and new_voice_audio else None,
+            )
         st.markdown(response)
         render_copy_button(response, f"copy-live-{len(st.session_state.messages)}")
+        render_listen_button(response)
     st.session_state.messages.append({"role": "assistant", "content": response})
     if ENABLE_SUPABASE_AUTH and current_user_id:
         try:
-            st.session_state.supabase.save_chat(current_user_id, user_message["content"], response)
+            st.session_state.supabase.save_chat(current_user_id, user_content, response)
             st.session_state.history_rows.append(
-                {"message": user_message["content"], "response": response, "timestamp": "now"}
+                {"message": user_content, "response": response, "timestamp": "now"}
             )
         except Exception as exc:
             st.warning(f"Response generated, but chat history could not be saved: {exc}")

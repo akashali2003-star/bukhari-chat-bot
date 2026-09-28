@@ -1,5 +1,5 @@
-const CACHE_NAME = "bukhari-chat-v1";
-const APP_SHELL = ["/app/", "/app/static/manifest.json", "/app/static/bukhari.logo.png"];
+const CACHE_NAME = "jarvis-chat-v1";
+const APP_SHELL = ["/app/", "/app/static/manifest.json", "/app/static/jarvis-icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
