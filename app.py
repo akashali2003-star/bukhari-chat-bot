@@ -307,21 +307,19 @@ def show_authentication(service: SupabaseService) -> None:
         reset_chat()
         st.rerun()
 
-    if st.button("Continue with Google", use_container_width=True, key="google-sign-in"):
-        try:
-            result = service.sign_in_with_google(auth_redirect_url())
-            url = google_auth_url(result)
-            if not url:
-                st.error("Google sign-in URL was not returned by Supabase.")
-            else:
-                redirect_script = json.dumps(url)
-                components.html(
-                    f"<script>window.parent.location.href = {redirect_script};</script>",
-                    height=0,
-                )
-                st.info("Opening Google sign-in...")
-        except Exception as exc:
-            st.error(f"Google sign-in could not start: {exc}")
+    try:
+        result = service.sign_in_with_google(auth_redirect_url())
+        url = google_auth_url(result)
+        if not url:
+            st.error("Google sign-in URL was not returned by Supabase.")
+        else:
+            safe_url = html.escape(url, quote=True)
+            st.markdown(
+                f'<a href="{safe_url}" target="_self" style="display:block;text-align:center;padding:0.62rem 1rem;border:1px solid rgba(85,231,255,0.34);border-radius:8px;background:#091827;color:#e4f8ff;font-weight:600;text-decoration:none">Continue with Google</a>',
+                unsafe_allow_html=True,
+            )
+    except Exception as exc:
+        st.error(f"Google sign-in could not start: {exc}")
 
     mode = st.radio("Account", ["Log in", "Sign up"], horizontal=True)
     with st.form("auth-form"):
